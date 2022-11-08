@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+
+        body {
+            font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+            color: white;
+            background-color: gray;
+        }
+
+        a {
+            color: blue;
+            text-decoration: none;
+        }
+
+        .background {
+            fill: none;
+        }
+        
+        .feature {
+            fill: gray;
+        }
+        
+        .mesh {
+            fill: none;
+            stroke: #fff;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        
+        .map-container {
+            background-image: linear-gradient(to bottom right, rgb(24, 59, 255), rgb(39, 134, 223), rgb(55, 153, 192));
+            width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
+            border-radius: 20px;
+        }
+
+        .header-container {
+            background-color: rgb(216, 216, 216);
+            margin-left: auto;
+            margin-right: auto;
+            width: 100%;
+            height: fit-content;
+            text-align: center;
+            color: black;
+            border-radius: 20px;
+        }
+        
+    </style>
+    <script src="//d3js.org/d3.v4.min.js"></script>
+    <script src="//d3js.org/topojson.v1.min.js"></script>
+    <script src="geotiff.min.js"></script>
+    <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+</head>
+
+<body>
+<div class="header-container">
+    <h1>Hypothesis: Coastlines are cooler than surrounding areas inland.</h1>
+    <h2>Source: <a href="https://n5eil01u.ecs.nsidc.org/ASO/ASO_3M_SD.001/2019.07.15/">National Snow and Ice Data Center</a></h2>
+    <a href="test.html">Test Site</a>
+</div>
+
+<div id="map" class="map-container"></div>
+<div id="raster" class="map-container"></div>
+
+<div class="header-container">
+    <h2>Conclusion: </h1>
+</div>
+
+<script>
+
+var width = 960,
+    height = 500,
+    barbSize = 40;
+
+var projection = d3.geoAlbers()
+    .scale(1000)
+    .translate([width / 2, height / 2]);
+
+var path = d3.geoPath()
+    .projection(projection);
+
+var svg = d3.select("#map").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+svg.append("rect")
+    .attr("class", "background")
+    .attr("width", width)
+    .attr("height", height);
+
+var g = svg.append("g")
+    .style("stroke-width", "1.5px");
+
+d3.request("data.tiff")
+    .responseType("arraybuffer")
+    .get(function(error, tiffData) {
+d3.json("data.json", function(error, us) {
+
+    g.selectAll("path")
+        .data(topojson.feature(us, us.objects.states).features)
+        .enter().append("path")
+        .attr("d", path)
+        .attr("class", "feature");
+
+    g.append("path")
+        .datum(topojson.mesh(us, us.objects.states, function(a, b) { return a !== b; }))
+        .attr("class", "mesh")
+        .attr("d", path);
+        
+})});
+
+
+
+</script>
+</body>
+</html>
